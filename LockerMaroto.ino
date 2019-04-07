@@ -24,8 +24,8 @@
   #include <SPI.h>
   #include <MFRC522.h>
 
-  const int RST_PIN 0 // RST = GPIO 0
-  const int SS_PIN 16 // D0
+  const int RST_PIN = 0; // RST = GPIO 0
+  const int SS_PIN = 16; // D0
   MFRC522 mfrc522(SS_PIN, RST_PIN);  //Criando uma estância da MFRC522
 
 //Servo (Lock - lck) - dependencies and initializations
