@@ -33,14 +33,15 @@ const String LCK_ITENS_UID_BASE_PATH = "/itensUID/";
 #include "fsHelpers.h"
 
 Servo lock;
+boolean lckIsLocked = false;
 const int LOCK_PIN = 4; // D2
 const int LOCK_POSITION = 90;  //Posição que representa o fechamento da tranca
 const int UNLOCK_POSITION = 0; //Posição que representa a abertura da tranca
 
 String lckState;
-const String CODE_STATE_LOCKED = "111";
-const String CODE_STATE_UNLOKED = "101";
-const String CODE_STATE_OPEN = "000";
+const String CODE_STATE_LOCKED = "11";
+const String CODE_STATE_UNLOKED = "10";
+const String CODE_STATE_OPEN = "00";
 
 //RFID (Locker Input Interface-lckInputInterface) - dependencies and initializations -
 #include <SPI.h>
@@ -51,13 +52,16 @@ MFRC522 lckInputInterface(SS_PIN, RST_PIN); //Criando uma estância da MFRC522
 #include "lckInputInterfaceHelpers.h"
 
 //ReedSwitch (Locker State Detector - lckStateDetector ) - dependencies and initializations
-const int LOCKER_STATE_DETECTOR_PIN = 5; // D1
-int lckStateDetector = 0;
+const int lckSwitchOpenDetectPin = 5; // D1
+boolean lckIsDoorClosed = 0;
 
 
 
 void setup(){
   Serial.begin(115200);
+  
+  //lckStateDetector
+  pinMode(lckSwitchOpenDetectPin, INPUT);
   
   //lckInputInterface Init
   SPI.begin();
@@ -74,6 +78,7 @@ void setup(){
 }
 
 void loop(){
+  //lckDoorClosed();
   unsigned long uid;
   if(lckInputInterface.PICC_IsNewCardPresent()) {
     uid = lckGetUID();
@@ -81,11 +86,17 @@ void loop(){
       //DO AN ACTION:
       //TODO - how does it will work?
       if(getUserByUIDSaved(uid) != ""){
-        lckLock();
+        lckDoorClosed();
+        if(lckIsDoorClosed && !lckIsLocked){
+          lckLock();
+        }else if(lckIsDoorClosed && lckIsLocked){
+          lckUnlock();
+        }
+        
         delay(1000);
-        lckUnlock();
-        getItemByUIDSaved(uid);
-        sendUIDToGateway(uid);
+        
+        //getItemByUIDSaved(uid);
+        //sendUIDToGateway(uid);
       }
       
     }
@@ -93,11 +104,25 @@ void loop(){
 }
 
 void lckLock(){
-  lock.write(LOCK_POSITION);
+    lock.write(LOCK_POSITION);
+    lckIsLocked = true;
 }
 
 void lckUnlock(){
   lock.write(UNLOCK_POSITION);
+  lckIsLocked = false;
+}
+
+boolean lckDoorClosed(){
+ int s = digitalRead(lckSwitchOpenDetectPin);
+ if (s == HIGH) {
+  lckIsDoorClosed = true;
+  Serial.println("Close");
+ } else {
+  lckIsDoorClosed = false;
+  Serial.println("Open");
+ }
+ return lckIsDoorClosed;
 }
 /*
 void doActionByState(String state){
