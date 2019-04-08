@@ -12,10 +12,12 @@ unsigned long lckGetUID(){
   return hex_num;
 }
 
-bool getUserByUIDSaved(unsigned long uid){
+String getUserByUIDSaved(unsigned long uid){
+  String parameter = "";
   String path = LCK_USERS_UID_BASE_PATH + uid;
-  Serial.println("getUserByUIDSaved - " + path);
-  return false;
+  parameter = readParameterOnFile(path);
+  Serial.println("getUserByUIDSaved - " + parameter);
+  return parameter;
 }
 bool getItemByUIDSaved(unsigned long uid){
   String path = LCK_ITENS_UID_BASE_PATH + uid;

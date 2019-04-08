@@ -26,13 +26,7 @@ const String LCK_USERS_UID_BASE_PATH = "/usersUID/";
 const String LCK_USERS_ID_BASE_PATH = "/usersID/";
 const String LCK_ITENS_UID_BASE_PATH = "/itensUID/";
 
-//RFID (Locker Input Interface-lckInputInterface) - dependencies and initializations -
-#include <SPI.h>
-#include <MFRC522.h>
-const int RST_PIN = 0;
-const int SS_PIN = 16;
-MFRC522 lckInputInterface(SS_PIN, RST_PIN); //Criando uma estância da MFRC522
-#include "lckInputInterfaceHelpers.h"
+
 
 //Servo (Lock - lck) - dependencies and initializations
 #include <Servo.h>
@@ -48,6 +42,14 @@ const String CODE_STATE_LOCKED = "111";
 const String CODE_STATE_UNLOKED = "101";
 const String CODE_STATE_OPEN = "000";
 
+//RFID (Locker Input Interface-lckInputInterface) - dependencies and initializations -
+#include <SPI.h>
+#include <MFRC522.h>
+const int RST_PIN = 0;
+const int SS_PIN = 16;
+MFRC522 lckInputInterface(SS_PIN, RST_PIN); //Criando uma estância da MFRC522
+#include "lckInputInterfaceHelpers.h"
+
 //ReedSwitch (Locker State Detector - lckStateDetector ) - dependencies and initializations
 const int LOCKER_STATE_DETECTOR_PIN = 5; // D1
 int lckStateDetector = 0;
@@ -55,14 +57,20 @@ int lckStateDetector = 0;
 
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   //lckInputInterface Init
   SPI.begin();
   lckInputInterface.PCD_Init();
 
   //lock
+  openFileSystem();
   lock.attach(LOCK_PIN);
+
+  //HARDCODE - REMOVE AFTER
+  saveUserByUID(3496392741);
+  lckUnlock();
+  delay(500);
 }
 
 void loop(){
@@ -72,41 +80,41 @@ void loop(){
     if(uid != -1){
       //DO AN ACTION:
       //TODO - how does it will work?
-      getUserByUIDSaved(uid);
-      getItemByUIDSaved(uid);
-      sendUIDToGateway(uid);
+      if(getUserByUIDSaved(uid) != ""){
+        lckLock();
+        delay(1000);
+        lckUnlock();
+        getItemByUIDSaved(uid);
+        sendUIDToGateway(uid);
+      }
+      
     }
   }
 }
 
+void lckLock(){
+  lock.write(LOCK_POSITION);
+}
+
+void lckUnlock(){
+  lock.write(UNLOCK_POSITION);
+}
 /*
-//lckInputInterface
-unsigned long lckGetUID(){
-  if ( ! lckInputInterface.PICC_ReadCardSerial()) {
-    return -1;
+void doActionByState(String state){
+  int angle = lock.read();
+  //TODO - colocar estado do sensor da porta
+  if(state.equals(stateLock) && angle != CODE_STATE_LOCKED){
+    Serial.println("Locking");
+    lckLock();
+  }else if(state.equals(stateUnlock) && angle != CODE_STATE_UNLOCK){
+    Serial.println("Unlocking");
+    lckUnlock();
   }
-  unsigned long hex_num;
-  hex_num =  lckInputInterface.uid.uidByte[0] << 24;
-  hex_num += lckInputInterface.uid.uidByte[1] << 16;
-  hex_num += lckInputInterface.uid.uidByte[2] <<  8;
-  hex_num += lckInputInterface.uid.uidByte[3];
-  lckInputInterface.PICC_HaltA();
-  return hex_num;
-}
-
-bool getUserByUIDSaved(unsigned long uid){
-  String path = LCK_USERS_UID_BASE_PATH + uid;
-  Serial.println("getUserByUIDSaved - " + path);
-  return false;
-}
-bool getItemByUIDSaved(unsigned long uid){
-  String path = LCK_ITENS_UID_BASE_PATH + uid;
-  Serial.println("getItemByUIDSaved - " + path);
-  return false;
-}
-
-bool sendUIDToGateway(unsigned long uid){
-  Serial.print("sendUIDToGateway - ");
-  Serial.println(uid);
-  return false;
 }*/
+
+void saveUserByUID(unsigned long uid){
+  String path = LCK_USERS_UID_BASE_PATH + uid;
+  String uidStr = String( uid );
+  writeParameterOnFile(path, uidStr);
+  Serial.println("saveUserByUID - " + uidStr);
+}
