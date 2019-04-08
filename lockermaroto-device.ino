@@ -20,19 +20,26 @@
 
 */
 
+//PATHS
+const String LCK_STATE_PATH = "/config/lckState.txt";
+const String LCK_USERS_UID_BASE_PATH = "/usersUID/";
+const String LCK_USERS_ID_BASE_PATH = "/usersID/";
+const String LCK_ITENS_UID_BASE_PATH = "/itensUID/";
+
 //RFID (Locker Input Interface-lckInputInterface) - dependencies and initializations -
 #include <SPI.h>
 #include <MFRC522.h>
-
-const int RST_PIN = 0;                                // RST = GPIO 0
-const int SS_PIN = 16;                                // D0
+const int RST_PIN = 0;
+const int SS_PIN = 16;
 MFRC522 lckInputInterface(SS_PIN, RST_PIN); //Criando uma estância da MFRC522
+#include "lckInputInterfaceHelpers.h"
 
 //Servo (Lock - lck) - dependencies and initializations
 #include <Servo.h>
 #include "fsHelpers.h"
 
 Servo lock;
+const int LOCK_PIN = 4; // D2
 const int LOCK_POSITION = 90;  //Posição que representa o fechamento da tranca
 const int UNLOCK_POSITION = 0; //Posição que representa a abertura da tranca
 
@@ -42,14 +49,10 @@ const String CODE_STATE_UNLOKED = "101";
 const String CODE_STATE_OPEN = "000";
 
 //ReedSwitch (Locker State Detector - lckStateDetector ) - dependencies and initializations
-const int LOCKER_STATE_DETECTOR_PIN = 5;
+const int LOCKER_STATE_DETECTOR_PIN = 5; // D1
 int lckStateDetector = 0;
 
-//PATHS
-const String LCK_STATE_PATH = "/config/lckState.txt";
-const String LCK_USERS_UID_BASE_PATH = "/usersUID/";
-const String LCK_USERS_ID_BASE_PATH = "/usersID/";
-const String LCK_ITENS_UID_BASE_PATH = "/itensUID/";
+
 
 void setup(){
   Serial.begin(9600);
@@ -57,6 +60,9 @@ void setup(){
   //lckInputInterface Init
   SPI.begin();
   lckInputInterface.PCD_Init();
+
+  //lock
+  lock.attach(LOCK_PIN);
 }
 
 void loop(){
@@ -73,6 +79,8 @@ void loop(){
   }
 }
 
+/*
+//lckInputInterface
 unsigned long lckGetUID(){
   if ( ! lckInputInterface.PICC_ReadCardSerial()) {
     return -1;
@@ -101,4 +109,4 @@ bool sendUIDToGateway(unsigned long uid){
   Serial.print("sendUIDToGateway - ");
   Serial.println(uid);
   return false;
-}
+}*/
