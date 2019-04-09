@@ -31,7 +31,7 @@ void writeParameterOnFile(String pathParameter, String parameter) {
   if (!mFile){
     Serial.println("writeParameterOnFile - Open File Error");
   } else {
-    mFile.println(pathParameter);
+    mFile.println(parameter);
     Serial.println("Parameter Saved");
   }
   mFile.close();
