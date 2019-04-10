@@ -236,7 +236,7 @@ String lckUpdateStateLocker(){
   if(lckIsLocked && lckIsDoorClosed){
     LockerState = true;
     lckCodeState = CODE_STATE_LOCKED;
-  }else if(!lckIsLocked && !lckIsDoorClosed){
+  }else if(!lckIsLocked && lckIsDoorClosed){
     LockerState = false;
     lckCodeState = CODE_STATE_UNLOCKED;
   } else {
