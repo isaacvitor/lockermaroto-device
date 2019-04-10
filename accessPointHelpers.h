@@ -8,12 +8,14 @@ void handleSave(){
   readSSID = server.arg("pSSID");
   readPassword = server.arg("pPassword");
   readGateway = server.arg("pGateway");
+  readGatewayPort = server.arg("pGatewayPort");
   readDeviceName = server.arg("pDeviceName");
   
-  writeParameterOnFile(SAVED_SSID, readSSID);
-  writeParameterOnFile(SAVED_PASSWORD, readPassword);
-  writeParameterOnFile(SAVED_GATEWAY, readGateway);
-  writeParameterOnFile(SAVED_DEVICE_NAME, readDeviceName);
+  writeParameterOnFile(SSID_SAVED, readSSID);
+  writeParameterOnFile(PASSWORD_SAVED, readPassword);
+  writeParameterOnFile(GATEWAY_SAVED, readGateway);
+  writeParameterOnFile(GATEWAY_PORT_SAVED, readGatewayPort);
+  writeParameterOnFile(DEVICE_NAME_SAVED, readDeviceName);
   
   String s = SAVED_page;
   server.send(200, "text/html", s); 
@@ -52,13 +54,15 @@ void definedOperationMode(){
 }
 
 void readSavedWifiParameters(){
-  readSSID = readParameterOnFile(SAVED_SSID);
+  readSSID = readParameterOnFile(SSID_SAVED);
   delay(300);
-  readPassword = readParameterOnFile(SAVED_PASSWORD);
+  readPassword = readParameterOnFile(PASSWORD_SAVED);
   delay(300);
-  readGateway = readParameterOnFile(SAVED_GATEWAY);
+  readGateway = readParameterOnFile(GATEWAY_SAVED);
   delay(300);
-  readDeviceName = readParameterOnFile(SAVED_DEVICE_NAME);
+  readGatewayPort = readParameterOnFile(GATEWAY_PORT_SAVED);
+  delay(300);
+  readDeviceName = readParameterOnFile(DEVICE_NAME_SAVED);
   delay(300);
 }
 
@@ -67,13 +71,32 @@ void setupWiFi(){
   readSavedWifiParameters();
   Serial.print("Connecting to ");
   Serial.println(readSSID);
+  
+  //To MQTT
   WiFi.begin(readSSID.c_str(), readPassword.c_str());
-
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
+  
+  Serial.println("");
+  Serial.println("WiFi connected");  
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
 
+void setupWiFiWebSocket(){
+  Serial.println("Loading saved parameters...");
+  readSavedWifiParameters();
+  Serial.print("Connecting to ");
+  Serial.println(readSSID);
+ 
+  WiFiMulti.addAP(readSSID.c_str(), readPassword.c_str());
+  while (WiFiMulti.run() != WL_CONNECTED) {
+   Serial.print(".");
+   delay(100);
+  }
+  
   Serial.println("");
   Serial.println("WiFi connected");  
   Serial.println("IP address: ");
