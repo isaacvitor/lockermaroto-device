@@ -117,6 +117,7 @@ const char INDEX_page[] PROGMEM = R"=====(
           <input type="text" name="pSSID" placeholder="SSID" />
           <input type="password" name="pPassword" placeholder="Password" />
           <input type="text" name="pGateway" placeholder="Gateway" />
+          <input type="text" name="pGatewayPort" placeholder="Port" />
           <input type="text" name="pDeviceName" placeholder="Device name" />
           <button>Save</button>
           <p class="message">

@@ -19,14 +19,10 @@ String getUserByUIDSaved(unsigned long uid){
   Serial.println("getUserByUIDSaved - " + parameter);
   return parameter;
 }
-bool getItemByUIDSaved(unsigned long uid){
+String getItemByUIDSaved(unsigned long uid){
+  String parameter = "";
   String path = LCK_ITENS_UID_BASE_PATH + uid;
-  Serial.println("getItemByUIDSaved - " + path);
-  return false;
-}
-
-bool sendUIDToGateway(unsigned long uid){
-  Serial.print("sendUIDToGateway - ");
-  Serial.println(uid);
-  return false;
+  parameter = readParameterOnFile(path);
+  Serial.println("getItemByUIDSaved - " + parameter);
+  return parameter;
 }
