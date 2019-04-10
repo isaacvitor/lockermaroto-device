@@ -139,6 +139,7 @@ void setup(){
       
     //HARDCODE - REMOVE AFTER
     lckLock();
+    lckUpdateStateLocker(); //REMOVE AFTER
     /*saveUserByUID(3496392741);
     lckUnlock();
     delay(500);*/
@@ -154,13 +155,13 @@ void loop(){
     if(isConnected) {
       //Checando o estado da conexão com o gateway
       healthCheck();  
+      lckUpdateStateLocker();
       if(lckInputInterface.PICC_IsNewCardPresent()) {
         uid = lckGetUID();
         if(uid != -1){
           //DO AN ACTION:
           //TODO - how does it will work?
           if(getUserByUIDSaved(uid) != ""){
-            lckUpdateDoorState();
             if(lckIsDoorClosed && !lckIsLocked){
               lckLock();
             }else if(lckIsDoorClosed && lckIsLocked){
@@ -194,7 +195,6 @@ void sendLockerSateToGateway(){
     webSocket.sendTXT("42[\"lockerState\",{\"lockerMac\":\""+LCK_LOCKER_MAC+"\",\"lockerState\":\""+state+"\", \"pinsState\":"+pinsState+"}]");
   }
 }
-
 
 //Lock
 void lckLock(){
@@ -236,10 +236,10 @@ String lckUpdateStateLocker(){
   if(lckIsLocked && lckIsDoorClosed){
     LockerState = true;
     lckCodeState = CODE_STATE_LOCKED;
-  }else if(!lckIsLocked && lckIsDoorClosed){
-    LockerState = false;
+  }else if(!lckIsLocked){
+    LockerState = LockerState ? LockerState : false;
     lckCodeState = CODE_STATE_UNLOCKED;
-  } else {
+  } else if(!lckIsLocked && !lckIsDoorClosed){
     LockerState = false;
     lckCodeState = CODE_STATE_OPEN;
   }
