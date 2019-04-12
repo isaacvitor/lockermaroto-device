@@ -1,3 +1,4 @@
+
 void handleHome(){
   String s = INDEX_page;
   server.send(200, "text/html", s);
@@ -11,11 +12,11 @@ void handleSave(){
   readGatewayPort = server.arg("pGatewayPort");
   readDeviceName = server.arg("pDeviceName");
   
-  writeParameterOnFile(SSID_SAVED, readSSID);
-  writeParameterOnFile(PASSWORD_SAVED, readPassword);
-  writeParameterOnFile(GATEWAY_SAVED, readGateway);
-  writeParameterOnFile(GATEWAY_PORT_SAVED, readGatewayPort);
-  writeParameterOnFile(DEVICE_NAME_SAVED, readDeviceName);
+  writeParameterInFS(SSID_SAVED_PATH, readSSID);
+  writeParameterInFS(PASSWORD_SAVED_PATH, readPassword);
+  writeParameterInFS(GATEWAY_SAVED_PATH, readGateway);
+  writeParameterInFS(GATEWAY_PORT_SAVED_PATH, readGatewayPort);
+  writeParameterInFS(DEVICE_NAME_SAVED_PATH, readDeviceName);
   
   String s = SAVED_page;
   server.send(200, "text/html", s); 
@@ -23,11 +24,15 @@ void handleSave(){
 
 void restartAcessPoint(){
   Serial.println("Restarting AP...");
-  ESP.restart();
+  
+  //isOnAccessPointMode = false;
+  //ESP.restart(); //Ligth
+  
+  ESP.reset(); //PUNK
 }
 
 void startAccessPoint(){
-  accessPointMode = true; 
+  isOnAccessPointMode = true; 
   
   WiFi.softAP(ssidAP, passwordAP);
   Serial.println();
@@ -44,45 +49,12 @@ void startAccessPoint(){
   Serial.println("AccessPoint Listening");
 }
 
-void definedOperationMode(){
-  if(digitalRead(BT_CHANGE_MODE) == HIGH){
-    Serial.println("AccessPooint MODE");
-    startAccessPoint();
-  } else {
-    Serial.println("Client MODE");
-  }
-}
-
 void readSavedWifiParameters(){
-  readSSID = readParameterOnFile(SSID_SAVED);
-  delay(300);
-  readPassword = readParameterOnFile(PASSWORD_SAVED);
-  delay(300);
-  readGateway = readParameterOnFile(GATEWAY_SAVED);
-  delay(300);
-  readGatewayPort = readParameterOnFile(GATEWAY_PORT_SAVED);
-  delay(300);
-  readDeviceName = readParameterOnFile(DEVICE_NAME_SAVED);
-  delay(300);
-}
-
-void setupWiFi(){
-  Serial.println("Loading saved parameters...");
-  readSavedWifiParameters();
-  Serial.print("Connecting to ");
-  Serial.println(readSSID);
-  
-  //To MQTT
-  WiFi.begin(readSSID.c_str(), readPassword.c_str());
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  
-  Serial.println("");
-  Serial.println("WiFi connected");  
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  readSSID = readParameterFromFS(SSID_SAVED_PATH);
+  readPassword = readParameterFromFS(PASSWORD_SAVED_PATH);
+  readGateway = readParameterFromFS(GATEWAY_SAVED_PATH);
+  readGatewayPort = readParameterFromFS(GATEWAY_PORT_SAVED_PATH);
+  readDeviceName = readParameterFromFS(DEVICE_NAME_SAVED_PATH);
 }
 
 void setupWiFiWebSocket(){

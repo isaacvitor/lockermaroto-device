@@ -15,6 +15,10 @@ void formatFileSystem(){
   SPIFFS.format();
 }
 
+bool existsParameter(String pathParameter){
+  return SPIFFS.exists(pathParameter);
+}
+
 void writeFile(String content, String path) {
   File mFile = SPIFFS.open(path, "w+");
   if (!mFile){
@@ -26,10 +30,10 @@ void writeFile(String content, String path) {
   mFile.close();
 }
 
-void writeParameterOnFile(String pathParameter, String parameter) {
-  File mFile = SPIFFS.open(pathParameter, "w+");
+void writeParameterInFS(String pathParameterFile, String parameter) {
+  File mFile = SPIFFS.open(pathParameterFile, "w+");
   if (!mFile){
-    Serial.println("writeParameterOnFile - Open File Error");
+    Serial.println("writeParameterInFS - Open File Error");
   } else {
     mFile.println(parameter);
     Serial.println("Parameter Saved");
@@ -37,22 +41,18 @@ void writeParameterOnFile(String pathParameter, String parameter) {
   mFile.close();
 }
 
-String readParameterOnFile(String pathParameterFile) {
+String readParameterFromFS(String pathParameterFile) {
   File parameterFile = SPIFFS.open(pathParameterFile, "r");
   if (!parameterFile){
-    Serial.println("readParameterOnFile - Open File Error");
+    Serial.println("readParameterFromFS - Open File Error");
   }
   String parameter = parameterFile.readStringUntil('\r');
   parameterFile.close();
   return parameter;
 }
 
-String readStringOnFile(String path){
-  File stringFile = SPIFFS.open(path, "r");
-  if (!stringFile){
-    Serial.println("readStringOnFile - Open File Error");
+bool removeParameterFromFS(String pathParameterFile){
+  if(SPIFFS.exists(pathParameterFile)){
+    return SPIFFS.remove(pathParameterFile);
   }
-  String content = stringFile.readString();
-  stringFile.close();
-  return content;
 }
