@@ -15,14 +15,14 @@ unsigned long lckGetUID(){
 String getUserByUIDSaved(unsigned long uid){
   String parameter = "";
   String path = LCK_USERS_UID_BASE_PATH + uid;
-  parameter = readParameterOnFile(path);
+  parameter = readParameterFromFS(path);
   Serial.println("getUserByUIDSaved - " + parameter);
   return parameter;
 }
 String getItemByUIDSaved(unsigned long uid){
   String parameter = "";
   String path = LCK_ITENS_UID_BASE_PATH + uid;
-  parameter = readParameterOnFile(path);
+  parameter = readParameterFromFS(path);
   Serial.println("getItemByUIDSaved - " + parameter);
   return parameter;
 }
