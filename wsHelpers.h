@@ -7,6 +7,8 @@ void updateRegister(JsonObject data){
   LOCKER_ID = data["_id"].as<String>();
 }
 
+
+//Handlers to emits
 void lockRemote(JsonObject data){
   String uid = data["userID"].as<String>();
   if(canLock(uid)){

@@ -117,16 +117,28 @@ DynamicJsonDocument jsonHelper(capacity);
   MFRC522 lckInputInterface(SS_PIN, RST_PIN); //Criando uma estância da MFRC522
   #include "lckInputInterfaceHelpers.h"
   
- //WS
+ //WS EVENTS
+  //String Parameters 
+  String getPinsStateString(){
+    lckUpdateStateLocker();
+    return "{\"lckIsDoorClosed\":"+String(lckIsDoorClosed)+",\"lckIsLocked\":"+lckIsLocked+",\"LockerState\":"+LockerState+",\"isRegister\":"+isRegister+"}";
+  }
+  String getLockerStateString(){
+    String state = lckUpdateStateLocker();
+    return "{\"mac\":\""+LCK_LOCKER_MAC+"\",\"name\":\""+readDeviceName+"\",\"codeState\":\""+state+"\",\"_id\":\""+LOCKER_ID+"\"}";
+  }
   void sendUIDToGateway(unsigned long uid){
     String uidStr = String( uid );
-    webSocket.sendTXT("42[\"lockerUID\",{\"lockerMac\":\""+LCK_LOCKER_MAC+"\",\"uid\":\""+uidStr+"}]");
+    String lockerState = getLockerStateString();
+    webSocket.sendTXT("42[\"lockerUID\",{\"locker\":"+lockerState+",\"uid\":\""+uidStr+"\"}]");
   }
   
   void updateStateFromGateway(){
-    String state = lckUpdateStateLocker();
-    String pinsState = "{\"lckIsDoorClosed\":"+String(lckIsDoorClosed)+",\"lckIsLocked\":"+lckIsLocked+",\"LockerState\":"+LockerState+",\"isRegister\":"+isRegister+"}";
-    webSocket.sendTXT("42[\"lockerState\",{\"mac\":\""+LCK_LOCKER_MAC+"\",\"name\":\""+readDeviceName+"\",\"codeState\":\""+state+"\",\"_id\":\""+LOCKER_ID+"\", \"pins\":"+pinsState+"}]");
+    //String state = lckUpdateStateLocker();
+    String pinsState = getPinsStateString();
+    String lockerState = getLockerStateString();
+    //webSocket.sendTXT("42[\"lockerState\",{\"mac\":\""+LCK_LOCKER_MAC+"\",\"name\":\""+readDeviceName+"\",\"codeState\":\""+state+"\",\"_id\":\""+LOCKER_ID+"\", \"pins\":"+pinsState+"}]");
+    webSocket.sendTXT("42[\"lockerState\",{\"locker\":"+lockerState+", \"pins\":"+pinsState+"}]");
   }
   
   void sendLockerStateToGateway(){
@@ -139,10 +151,11 @@ DynamicJsonDocument jsonHelper(capacity);
   }
   
   void updateStateByUser(String userUID){
-    String state = lckUpdateStateLocker();
+    String pinsState = getPinsStateString();
+    String lockerState = getLockerStateString();
     String user = "{\"ekey\":\""+userUID+"\"}";
-    String pinsState = "{\"lckIsDoorClosed\":"+String(lckIsDoorClosed)+",\"lckIsLocked\":"+lckIsLocked+",\"LockerState\":"+LockerState+",\"isRegister\":"+isRegister+"}";
-    webSocket.sendTXT("42[\"lockerState\",{\"mac\":\""+LCK_LOCKER_MAC+"\",\"name\":\""+readDeviceName+"\",\"codeState\":\""+state+"\",\"_id\":\""+LOCKER_ID+"\", \"pins\":"+pinsState+",\"user\":"+user+"}]");
+    //webSocket.sendTXT("42[\"lockerUpdateState\",{\"mac\":\""+LCK_LOCKER_MAC+"\",\"name\":\""+readDeviceName+"\",\"codeState\":\""+state+"\",\"_id\":\""+LOCKER_ID+"\", \"pins\":"+pinsState+",\"user\":"+user+"}]");
+    webSocket.sendTXT("42[\"lockerUpdateStateByUser\",{\"locker\":"+lockerState+", \"pins\":"+pinsState+", \"user\":"+user+"}]");
   }
 
 //Lock
@@ -278,19 +291,7 @@ DynamicJsonDocument jsonHelper(capacity);
           }
           
         } else{
-          //sendUIDToGateway();
-          digitalWrite(PIN_BUZZER, HIGH);
-          delay(10);
-          digitalWrite(PIN_BUZZER, LOW);
-          delay(10);
-          digitalWrite(PIN_BUZZER, HIGH);
-          delay(10);
-          digitalWrite(PIN_BUZZER, LOW);
-          delay(10);
-          digitalWrite(PIN_BUZZER, HIGH);
-          delay(10);
-          digitalWrite(PIN_BUZZER, LOW);
-          delay(10);
+          sendUIDToGateway(uid);
         }
       }
     }

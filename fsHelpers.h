@@ -42,13 +42,17 @@ void writeParameterInFS(String pathParameterFile, String parameter) {
 }
 
 String readParameterFromFS(String pathParameterFile) {
-  File parameterFile = SPIFFS.open(pathParameterFile, "r");
-  if (!parameterFile){
-    Serial.println("readParameterFromFS - Open File Error");
+  if(SPIFFS.exists(pathParameterFile)){
+    File parameterFile = SPIFFS.open(pathParameterFile, "r");
+    if (!parameterFile){
+      Serial.println("readParameterFromFS - Open File Error");
+    }
+    String parameter = parameterFile.readStringUntil('\r');
+    parameterFile.close();
+    return parameter;
+  }else { 
+    return "";
   }
-  String parameter = parameterFile.readStringUntil('\r');
-  parameterFile.close();
-  return parameter;
 }
 
 bool removeParameterFromFS(String pathParameterFile){
