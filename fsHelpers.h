@@ -15,6 +15,16 @@ void formatFileSystem(){
   SPIFFS.format();
 }
 
+void deleteParametersOnPath(String path){
+  Serial.print("deleteParametersOnPath");
+  Serial.println(path);
+  Dir dir = SPIFFS.openDir(path);
+  while (dir.next()) {
+    Serial.println(dir.fileName());
+    SPIFFS.remove(dir.fileName());
+  } 
+}
+
 bool existsParameter(String pathParameter){
   return SPIFFS.exists(pathParameter);
 }
@@ -56,6 +66,8 @@ String readParameterFromFS(String pathParameterFile) {
 }
 
 bool removeParameterFromFS(String pathParameterFile){
+  Serial.print("pathParameterFile");
+  Serial.println(pathParameterFile);
   if(SPIFFS.exists(pathParameterFile)){
     return SPIFFS.remove(pathParameterFile);
   }
