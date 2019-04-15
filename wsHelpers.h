@@ -22,9 +22,19 @@ void unlockRemote(JsonObject data){
     //Do something
   }
 }
-
-void addUserRemote(JsonObject data){
-  
+//updateUsers
+void updateUsers(JsonObject data){
+  String mac = data["mac"].as<String>();
+  if(mac.equals(LCK_LOCKER_MAC)){
+    deleteParametersOnPath(LCK_USERS_UID_BASE_PATH);
+    int p=0;
+    unsigned int size = data["ekeys"].size();
+    while(p<size){
+      const String uid = data["ekeys"][p].as<String>();
+      saveUserByUID(uid);
+      p += 1;
+    }
+  }
 }
 
 void removeUserRemote(JsonObject data){
@@ -40,8 +50,9 @@ void handleRemoteEvent(String eventName, JsonObject data){
    lockRemote(data); 
   }else if(eventName.equals( "unlockRemote")){
    unlockRemote(data); 
+  }else if(eventName.equals( "updateUsers")){
+   updateUsers(data); 
   }
-  
 }
 
 void handlePayload(String payload){

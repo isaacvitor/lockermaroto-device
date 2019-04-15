@@ -26,9 +26,9 @@ void restartAcessPoint(){
   Serial.println("Restarting AP...");
   
   //isOnAccessPointMode = false;
-  //ESP.restart(); //Ligth
+  ESP.restart(); //Ligth
   
-  ESP.reset(); //PUNK
+  //ESP.reset(); //PUNK
 }
 
 void startAccessPoint(){
@@ -43,7 +43,7 @@ void startAccessPoint(){
   
   server.on("/", handleHome);
   server.on("/submit", handleSave);
-  server.on("/restart", restartAcessPoint);
+  server.on("/reset", restartAcessPoint);
   server.begin();
   
   Serial.println("AccessPoint Listening");

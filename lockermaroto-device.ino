@@ -46,8 +46,8 @@ const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_S
 DynamicJsonDocument jsonHelper(capacity);
 
 //Definição de PINS
-  #define PIN_BUZZER D8 //Pin do Buzzer
-  const int CHANGE_MODE_PIN = A0; //Pin do controle de MODO: AP or Client
+  #define PIN_BUZZER D8 // D8 Pin do Buzzer
+  const int CHANGE_MODE_PIN = A0;//A0; //Pin do controle de MODO: AP or Client
   const int LOCK_PIN = 4; // D2 //Pin da tarava - Lock
 
   const int RST_PIN = 0; //D3? Pin reset do MFRC522
@@ -55,7 +55,7 @@ DynamicJsonDocument jsonHelper(capacity);
   const int DETECT_DOOR_STATE_PIN = 5; // D1 Pin da chave que controla se a porta está aberta ou fechada
 
 //Controle do estado da aplicação
-  #define MESSAGE_STATE_INTERVAL 5000
+  #define MESSAGE_STATE_INTERVAL 500
   uint64_t stateTimestamp = 0;
 
   #define HEARTBEAT_INTERVAL 25000
@@ -85,8 +85,8 @@ DynamicJsonDocument jsonHelper(capacity);
 
 
 //Variáveis para AccessPoint Mode
-  String mac = "LOCKER-" + WiFi.softAPmacAddress(); //Composição do nome do AP
-  const char *ssidAP = mac.c_str(); //SSID do AP
+  String APName = "LOCKER-" + WiFi.softAPmacAddress(); //Composição do nome do AP
+  const char *ssidAP = APName.c_str(); //SSID do AP
   const char *passwordAP = "lockermaroto";//Senha do AP
 
   String readSSID;//Global
@@ -167,13 +167,23 @@ DynamicJsonDocument jsonHelper(capacity);
     delay(100);
     digitalWrite(PIN_BUZZER, HIGH);
     delay(100);
-    digitalWrite(PIN_BUZZER, LOW);  
+    digitalWrite(PIN_BUZZER, LOW);
+    /*analogWrite(PIN_BUZZER, 1023);
+    delay(100);
+    analogWrite(PIN_BUZZER, 0);
+    delay(100);
+    analogWrite(PIN_BUZZER, 1023);
+    delay(100);
+    analogWrite(PIN_BUZZER, 0); */
   }
   
   void buzzerToUnlock(){
     digitalWrite(PIN_BUZZER, HIGH);
     delay(500);
     digitalWrite(PIN_BUZZER, LOW);
+    /*analogWrite(PIN_BUZZER, 1023);
+    delay(500);
+    analogWrite(PIN_BUZZER, 0);*/
   }
   
   void lckLock(){
@@ -304,12 +314,15 @@ void setup(){
   Serial.begin(115200);
   //Abrindo sistema de arquivos
   openFileSystem();
-  
+    
   //Definindo o botão do modo de operação
   pinMode(CHANGE_MODE_PIN, INPUT);
+
+   //Serial.println("Aguardando seleção do modo");
+   //delay(5000);
  
   //Definindo o modo de operação ACCESSPOINT X CLIENT
-  if(analogRead(CHANGE_MODE_PIN) == HIGH){
+  if(analogRead(CHANGE_MODE_PIN) >= 1023){
     Serial.println("AccessPoint MODE");
     startAccessPoint();
   } else {
